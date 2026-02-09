@@ -1,3 +1,5 @@
+// src/core/simulation.rs
+
 use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
@@ -8,8 +10,9 @@ use crate::core::kpoints::KGrid;
 use crate::core::structure::Structure;
 use crate::io::upf::{Pseudopotential, UpfError};
 use crate::utils::welcome::print_welcome;
-use crate::core::basis::PlaneWaveBasis; // Novo
-use crate::core::fft::FftGrid;         // Novo
+use crate::core::basis::PlaneWaveBasis;
+use crate::core::fft::FftGrid;         
+use crate::dft::density::calculate_initial_density;
 
 #[derive(Error, Debug)]
 pub enum SimulationError {
@@ -64,6 +67,41 @@ impl Simulation {
         // Aqui começaria o loop SCF:
         // 1. Inicializar densidade aleatória ou superposição atômica
         // 2. Loop { V_eff -> Diagonalização -> Rho_new -> Mix -> Check Convergência }
+    }
+
+    /// Preenche o grid rho com a superposição das densidades atômicas
+    pub fn initialize_density(&mut self) {
+        println!("Calculando densidade inicial (SAD)...");
+        
+        let rho_sad = calculate_initial_density(
+            &self.structure, 
+            &self.fft_grid, 
+            &self.pseudos
+        );
+        
+        // Atualiza o estado da simulação
+        self.rho = rho_sad;
+        
+        // Check de Carga Total (Integral)
+        // Carga = sum(rho) * volume_voxel
+        // volume_voxel = det(Lattice) / N_grid
+        let volume = self.structure.lattice.volume();
+        let n_grid = self.fft_grid.size[0] * self.fft_grid.size[1] * self.fft_grid.size[2];
+        let dvol = volume / n_grid as f64;
+        
+        let total_charge: f64 = self.rho.sum() * dvol;
+        
+        println!("Densidade inicial calculada.");
+        println!("  - Carga Total Integrada: {:.4} e", total_charge);
+        
+        // Verifica neutralidade (soma dos eletrons de valencia)
+        let mut expected_charge = 0.0;
+        for atom in &self.structure.atoms {
+            if let Some(p) = self.pseudos.get(&atom.species_id) {
+                expected_charge += p.header.z_valence;
+            }
+        }
+        println!("  - Carga Esperada (Zval): {:.4} e", expected_charge);
     }
 }
 

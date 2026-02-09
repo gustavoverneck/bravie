@@ -37,7 +37,7 @@ fn run_basis_demo() -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Construir a Simulação
     // Isso dispara internamente a criação das Bases e do Grid FFT
-    let ecut = 20.0; // Ry
+    let ecut = 100.0; // Ry
     println!("Construindo simulação com Ecut = {:.1} Ry...", ecut);
 
     let mut sim = Simulation::builder()
@@ -45,6 +45,11 @@ fn run_basis_demo() -> Result<(), Box<dyn std::error::Error>> {
         .ecut(ecut)
         .k_grid(KGrid::gamma()) // Usando apenas ponto Gamma para o exemplo
         .build()?;
+
+    sim.initialize_density();
+    // Verifique se o rho não é tudo zero
+    let center = sim.fft_grid.size.map(|x| x / 2);
+    println!("Rho no centro: {:.4}", sim.rho[[center[0], center[1], center[2]]]);
 
     // 3. Inspecionar os Motores Numéricos
     // Acessamos a primeira base (k=0) e o grid FFT
