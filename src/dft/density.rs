@@ -1,10 +1,11 @@
 use std::f64::consts::PI;
-use ndarray::Array3;
+use ndarray::{Array1, Array3};
 use nalgebra::Vector3;
 use crate::core::structure::Structure;
 use crate::core::fft::FftGrid;
 use crate::io::upf::Pseudopotential;
 use std::collections::HashMap;
+use num_complex::Complex64;
 
 /// Calcula a densidade inicial (SAD) e aplica renormalização de carga.
 pub fn calculate_initial_density(
@@ -135,4 +136,40 @@ fn interpolate_rho_atom(r: f64, pseudo: &Pseudopotential) -> f64 {
 
     // Converte de Radial Charge (UPF) para Volumetric Charge
     y_interp / (4.0 * PI * r * r)
+}
+
+/// Calcula a densidade eletrônica rho(r) a partir das funções de onda ocupadas.
+/// rho(r) = sum_n f_n * |psi_n(r)|^2
+/// Onde f_n é a ocupação (2.0 para spin-degenerado, ou 1.0, etc).
+pub fn compute_density_from_wavefunctions(
+    eigenvectors_g: &[Array1<Complex64>], // CORREÇÃO: Array1<Complex64> (num_complex)
+    fft_grid: &mut FftGrid,
+    occupations: &[f64]
+) -> Array3<f64> {
+    let (nx, ny, nz) = (fft_grid.size[0], fft_grid.size[1], fft_grid.size[2]);
+    let mut rho_new = Array3::<f64>::zeros((nx, ny, nz));
+    
+    // Itera sobre bandas
+    for (psi_g, &occ) in eigenvectors_g.iter().zip(occupations.iter()) {
+        if occ < 1e-6 { continue; }
+
+        // 1. Leva para o espaço real: G -> r
+        // Precisamos clonar psi_g se to_real_space for destrutivo ou usar buffer
+        // O método to_real_space do FftGrid copia os coeficientes para o buffer e faz IFFT.
+        // Ele não altera o psi_g de entrada se a assinatura for &Array1.
+        fft_grid.to_real_space(psi_g);
+
+        // 2. Acumula |psi(r)|^2
+        for i in 0..nx {
+            for j in 0..ny {
+                for k in 0..nz {
+                    let val = fft_grid.buffer[[i, j, k]];
+                    let density_contribution = val.norm_sqr(); // |psi|^2
+                    rho_new[[i, j, k]] += occ * density_contribution;
+                }
+            }
+        }
+    }
+
+    rho_new
 }

@@ -32,6 +32,12 @@ pub enum SimulationError {
     UpfLoadError(#[from] UpfError),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HamiltonianModel {
+    Schrodinger,            // Clássico (p^2 / 2m)
+    DiracScalarRelativistic // Relativístico (sqrt(p^2 c^2 + m^2 c^4))
+}
+
 pub struct Simulation {
     // Inputs Físicos
     pub structure: Structure,
@@ -44,6 +50,7 @@ pub struct Simulation {
     pub fft_grid: FftGrid,          // Gerenciador da FFT e memória
     pub rho: Array3<f64>,           // Densidade de carga no espaço real
     pub v_eff: Array3<f64>,         // Potencial Efetivo Total no espaço real
+    pub hamiltonian_model: HamiltonianModel,
 }
 
 impl Simulation {
@@ -110,6 +117,7 @@ pub struct SimulationBuilder {
     structure: Option<Structure>,
     ecut: Option<f64>,
     k_grid: Option<KGrid>,
+    pub hamiltonian_model: HamiltonianModel,
 }
 
 impl SimulationBuilder {
@@ -118,6 +126,7 @@ impl SimulationBuilder {
             structure: None,
             ecut: None,
             k_grid: None,
+            hamiltonian_model: HamiltonianModel::Schrodinger,
         }
     }
 
@@ -134,6 +143,15 @@ impl SimulationBuilder {
     // Corrigido typo: k_drid -> k_grid
     pub fn k_grid(mut self, k_grid: KGrid) -> Self {
         self.k_grid = Some(k_grid);
+        self
+    }
+
+    pub fn relativistic(mut self, enabled: bool) -> Self {
+        self.hamiltonian_model = if enabled {
+            HamiltonianModel::DiracScalarRelativistic
+        } else {
+            HamiltonianModel::Schrodinger
+        };
         self
     }
 
@@ -198,6 +216,8 @@ impl SimulationBuilder {
             fft_grid,
             rho,
             v_eff,
+            hamiltonian_model: self.hamiltonian_model,
         })
     }
+
 }
