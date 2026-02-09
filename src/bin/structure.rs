@@ -13,7 +13,7 @@ fn run_structure_test() -> Result<(), Box<dyn std::error::Error>> {
         element: "C".to_string(),
         atomic_number: 6,
         mass: 12.011,
-        pseudo_path: "C.upf".to_string(),
+        pseudo_path: "pp/C.pbe-n-kjpaw_psl.1.0.0.UPF".to_string(),
     };
 
     // Vetores da rede hexagonal
