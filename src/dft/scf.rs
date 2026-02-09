@@ -29,7 +29,7 @@ impl Default for ScfParameters {
     }
 }
 
-pub fn run_scf_loop(sim: &mut Simulation, params: ScfParameters) {
+pub fn run_scf_loop(sim: &mut Simulation, params: ScfParameters) -> f64 {
     println!("\n=== Iniciando Ciclo Auto-Consistente (SCF) ===");
     println!("Max Iters: {}, Tol E: {:.1e} Ry, Beta: {:.2}", params.max_iter, params.tol_energy, params.mixing_beta);
 
@@ -60,6 +60,8 @@ pub fn run_scf_loop(sim: &mut Simulation, params: ScfParameters) {
 
     // Inicializa o Mixer
     let mut mixer = AndersonMixer::new(params.mixing_beta, params.mixing_history);
+
+    let mut final_energy = 0.0;
 
     for iter in 1..=params.max_iter {
         // A. Calcula Potenciais Dependentes de Rho
@@ -136,6 +138,8 @@ pub fn run_scf_loop(sim: &mut Simulation, params: ScfParameters) {
         println!("SCF {:2} | E_band: {:.6} Ry | dE: {:.1e} | dRho: {:.1e}", 
             iter, current_energy, e_diff, rho_err);
 
+        final_energy = e_band;
+
         if iter > 1 && e_diff < params.tol_energy && rho_err < params.tol_rho {
             println!("Convergência alcançada em {} iterações!", iter);
             break;
@@ -143,4 +147,6 @@ pub fn run_scf_loop(sim: &mut Simulation, params: ScfParameters) {
         
         prev_energy = current_energy;
     }
+    
+    final_energy
 }
