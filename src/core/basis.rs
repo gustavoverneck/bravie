@@ -1,3 +1,5 @@
+// src/core/basis.rs
+
 use nalgebra::Vector3;
 use crate::core::structure::Structure;
 
@@ -15,6 +17,9 @@ pub struct PlaneWaveBasis {
     
     /// Lista de índices (i, j, k) dos vetores G onde |k + G|^2 <= Ecut
     pub g_vectors: Vec<(i32, i32, i32)>,
+
+    /// |G+k|^2 em unidades atômicas
+    pub g_norm_sq: Vec<f64>,
     
     /// Ponto K associado a esta base (coordenadas fracionárias)
     pub k_point: Vector3<f64>,
@@ -38,7 +43,7 @@ impl PlaneWaveBasis {
         let fft_grid = Self::calculate_optimal_fft_grid(&structure.lattice.reciprocal(), ecut_rho);
 
         // 3. Gera os vetores G ativos para este k-point (baseado em Ecut)
-        let g_vectors = Self::generate_g_vectors(structure, fft_grid, ecut, k_vec);
+        let (g_vectors, g_norm_sq) = Self::generate_g_vectors(structure, fft_grid, ecut, k_vec);
 
         println!(
             "    Basis Init: Ecut={:.1} Ry | Grid=[{}, {}, {}] | NG={} (k={:?})",
@@ -50,6 +55,7 @@ impl PlaneWaveBasis {
             ecut_rho,
             fft_grid,
             g_vectors,
+            g_norm_sq, // <--- Adicione aqui
             k_point: k_vec,
         }
     }
@@ -86,8 +92,9 @@ impl PlaneWaveBasis {
         grid_dim: [usize; 3], 
         ecut: f64, 
         k_point: Vector3<f64>
-    ) -> Vec<(i32, i32, i32)> {
+    ) -> (Vec<(i32, i32, i32)>, Vec<f64>) {
         let mut g_vecs = Vec::new();
+        let mut g_sq = Vec::new();
         let recip = structure.lattice.reciprocal(); // Matriz onde colunas são b1, b2, b3
 
         // Define a caixa de busca baseada no grid FFT.
@@ -108,19 +115,20 @@ impl PlaneWaveBasis {
 
                     // Vetor Cartesiano: q = B * (k+G)
                     let q_cart = recip * kg_frac;
+                    let q2 = q_cart.norm_squared();
 
                     // Energia cinética (unidades atômicas/Ry) = |q|^2
                     if q_cart.norm_squared() <= ecut {
                         g_vecs.push((i, j, k));
+                        g_sq.push(q2);
                     }
                 }
             }
         }
+        (g_vecs, g_sq)
         
         // Otimização opcional: Ordenar vetores por energia (ajuda no pré-condicionamento depois)
         // g_vecs.sort_by(|a, b| ...);
-        
-        g_vecs
     }
 
     /// Encontra o próximo tamanho de grid que é produto de primos pequenos (2, 3, 5, 7).

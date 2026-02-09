@@ -43,6 +43,7 @@ pub struct Simulation {
     pub bases: Vec<PlaneWaveBasis>, // Bases de ondas planas (uma por k-point)
     pub fft_grid: FftGrid,          // Gerenciador da FFT e memória
     pub rho: Array3<f64>,           // Densidade de carga no espaço real
+    pub v_eff: Array3<f64>,         // Potencial Efetivo Total no espaço real
 }
 
 impl Simulation {
@@ -186,6 +187,7 @@ impl SimulationBuilder {
         // 4. Alocação da Densidade (Rho)
         let (nx, ny, nz) = (fft_grid.size[0], fft_grid.size[1], fft_grid.size[2]);
         let rho = Array3::<f64>::zeros((nx, ny, nz));
+        let v_eff = Array3::<f64>::zeros((nx, ny, nz));
 
         Ok(Simulation {
             structure,
@@ -195,6 +197,7 @@ impl SimulationBuilder {
             bases,
             fft_grid,
             rho,
+            v_eff,
         })
     }
 }
