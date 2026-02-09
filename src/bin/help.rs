@@ -52,5 +52,5 @@ fn main() {
     // print_commands();
     // print_options();
     // print_examples();
-    // print_footer();
+    print_footer();
 }

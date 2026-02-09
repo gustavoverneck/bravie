@@ -28,15 +28,14 @@ fn run_structure_test() -> Result<(), Box<dyn std::error::Error>> {
         .add_atom([a / 2.0, a * (3.0f64).sqrt() / 6.0, 0.0], 1) // Átomo de Carbono 2 (1/3, 1/3 em coordenadas internas)
         .build()?;
 
-    let sim = Simulation::builder()
+    let mut sim = Simulation::builder()
         .structure(graphene.clone())
         .ecut(30.0)
         .build()?;
 
     sim.run();
 
-    println!("Estrutura de Grafeno criada com sucesso:");
-    println!("{}", graphene);
+    println!("\nEstrutura de Grafeno criada com sucesso.");
 
     Ok(())
 }
