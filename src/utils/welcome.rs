@@ -5,9 +5,9 @@ pub fn print_welcome() {
   / __ \ / ___/ / __ `/ | | / // // _ \
  / /_/ // /    / /_/ /  | |/ // //  __/
 /_.___//_/     \__,_/   |___//_/ \___/ 
-                                        
-    Bravie: A Modern Rust DFT Code
-    --------------------------------
+                                    
+Bravie: A (work in progress) Rust DFT Software
+----------------------------------------------
     "#;
     println!("{}", banner);
 }

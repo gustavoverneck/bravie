@@ -1,5 +1,19 @@
 use nalgebra::{Matrix3, Vector3};
 use std::fmt;
+use thiserror::Error;
+
+// Definindo os erros possíveis na criação da estrutura
+#[derive(Error, Debug)]
+pub enum StructureError {
+    #[error("A rede cristalina (Lattice) não foi definida.")]
+    MissingLattice,
+    
+    #[error("A estrutura não contém átomos.")]
+    EmptyStructure,
+
+    #[error("Espécie inválida ou não encontrada para o ID: {0}")]
+    InvalidSpecies(usize),
+}
 
 #[derive(Debug, Clone)]
 pub struct Species {
@@ -35,8 +49,8 @@ impl Lattice {
     pub fn reciprocal(&self) -> Matrix3<f64> {
         let vol = self.volume();
         let a1 = self.vectors.column(0);
-        let a2 = self.vectors.column(0);
-        let a3 = self.vectors.column(0);
+        let a2 = self.vectors.column(1);
+        let a3 = self.vectors.column(2);
         let factor = 2.0 * std::f64::consts::PI / vol;
 
         let b1 = a2.cross(&a3) * factor;
@@ -113,11 +127,13 @@ impl StructureBuilder {
     }
 
 
-    pub fn build(self) -> Result<Structure, String> {
-        let lattice = self.lattice.ok_or("Erro: Rede não definida!")?;
+    pub fn build(self) -> Result<Structure, StructureError> {
+        let lattice = self.lattice.ok_or(StructureError::MissingLattice)?;
+        
         if self.atoms.is_empty() {
-            return Err("Erro: Estrutura vazia.".to_string());
+            return Err(StructureError::EmptyStructure);
         }
+
         Ok(Structure { 
             lattice, 
             species: self.species,
