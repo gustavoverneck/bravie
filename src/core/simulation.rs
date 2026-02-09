@@ -1,16 +1,11 @@
 use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
+use crate::core::kpoints::KGrid;
 use crate::core::structure::Structure;
 use crate::io::upf::{Pseudopotential, UpfError}; //
 use crate::utils::welcome::print_welcome;
 
-
-pub struct Simulation {
-    pub structure: Structure,                 // A rede cristalina e átomos
-    pub ecut: f64,                            // Energia de corte (Kinetic Energy Cutoff) em Ry ou Ha
-    pub pseudos: HashMap<usize, Pseudopotential>, // Mapa: ID da Espécie -> Pseudopotencial carregado
-}
 
 #[derive(Error, Debug)]
 pub enum SimulationError {
@@ -25,6 +20,13 @@ pub enum SimulationError {
 
     #[error("Erro ao carregar pseudopotencial: {0}")]
     UpfLoadError(#[from] UpfError), // Encapsula automaticamente erros do UPF
+}
+
+pub struct Simulation {
+    pub structure: Structure,                 // A rede cristalina e átomos
+    pub ecut: f64,                            // Energia de corte (Kinetic Energy Cutoff) em Ry
+    pub k_grid: KGrid,                        // KPoints Grid
+    pub pseudos: HashMap<usize, Pseudopotential>, // Mapa: ID da Espécie -> Pseudopotencial carregado
 }
 
 impl Simulation {
@@ -45,6 +47,7 @@ impl Simulation {
 pub struct SimulationBuilder {
     structure: Option<Structure>,
     ecut: Option<f64>,
+    k_grid: Option<KGrid>,
 }
 
 impl SimulationBuilder {
@@ -53,6 +56,7 @@ impl SimulationBuilder {
         Self {
             structure: None,
             ecut: None, // Adicionar valor padrão?
+            k_grid: None,
         }
     }
 
@@ -68,10 +72,16 @@ impl SimulationBuilder {
         self
     }
 
+    pub fn k_drid(mut self, k_grid: KGrid) -> Self {
+        self.k_grid = Some(k_grid);
+        self
+    }
+
     pub fn build(self) -> Result<Simulation, SimulationError> {
         // Validações básicas
         let structure = self.structure.ok_or(SimulationError::MissingStructure)?;
         let ecut = self.ecut.ok_or(SimulationError::MissingEcut)?;
+        let k_grid = self.k_grid.unwrap_or_else(|| KGrid::gamma());
 
         // Carregamento automático dos Pseudos
         let mut pseudos = HashMap::new();
@@ -100,6 +110,7 @@ impl SimulationBuilder {
         Ok(Simulation {
             structure,
             ecut,
+            k_grid,
             pseudos,
         })
     }

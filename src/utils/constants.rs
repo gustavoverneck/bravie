@@ -18,7 +18,7 @@ pub const BOHR_TO_NM: f64 = BOHR_TO_ANGSTROM * 0.1;
 pub const NM_TO_BOHR: f64 = 1.0 / BOHR_TO_NM;
 
 // --- Energia ---
-// Unidade interna do Bravie: HARTREE (Ha)
+// Unidade interna do Bravie: RYDBERG (Ry)
 // 1 Hartree = 27.211386245988 eV
 // 1 Hartree = 2.0 Rydberg
 pub const HA_TO_EV: f64 = 27.211386245988;
