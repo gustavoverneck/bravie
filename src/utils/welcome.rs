@@ -7,6 +7,7 @@ pub fn print_welcome() {
 /_.___//_/     \__,_/   |___//_/ \___/ 
                                     
 Bravie: A (work in progress) Rust DFT Software
+Versão: 0.1.0 (Dev)
 ----------------------------------------------
     "#;
     println!("{}", banner);
