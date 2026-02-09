@@ -1,7 +1,5 @@
 use nalgebra::Vector3;
 
-use crate::core::structure::Structure;
-
 #[derive(Debug, Clone)]
 pub struct KPoint {
     pub coord: [f64; 3], // Coordenadas fracionárias (em relação à recíproca)
