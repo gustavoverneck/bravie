@@ -21,7 +21,7 @@ fn run_basis_demo() -> Result<(), Box<dyn std::error::Error>> {
         element: "Si".to_string(),
         atomic_number: 14,
         mass: 28.085,
-        pseudo_path: "pp/Si.pbe-n-kjpaw_psl.1.0.0.UPF".to_string(),
+        pseudo_path: "pp/Si.pbe-n-rrkjus_psl.1.0.0.UPF".to_string(),
     };
 
     let silicon = Structure::builder()
