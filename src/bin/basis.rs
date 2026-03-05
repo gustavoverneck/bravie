@@ -13,7 +13,7 @@ fn run_basis_demo() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Demonstração: Basis Set e FFT ===\n");
 
     // 1. Configurar Estrutura (Exemplo: Silício FCC)
-    let a = 10.26; // Parâmetro de rede (Bohr)
+    let a: f64 = 10.26; // Parâmetro de rede (Bohr)
     
     // Espécie dummy (o pseudopotencial precisa existir ou o mock deve aceitar)
     let si = Species {
