@@ -4,8 +4,9 @@ Um solver de Teoria do Funcional da Densidade (DFT) escrito em Rust, focado em a
 **Referência Geral para a Arquitetura do Código:**
 * Martin, R. M. (2004). *Electronic Structure: Basic Theory and Practical Methods*. Cambridge University Press.
 * Payne, M. C., et al. (1992). *Iterative minimization techniques for ab initio total-energy calculations: molecular dynamics and conjugate gradients*. Reviews of Modern Physics, 64(4), 1045. 
-* Ashcroft, Mermin.(2022). *Física do Estado Sólido*. Cengage Learning.
-* Oliveira, de Jesus. *Introdução à Física do Estado Sólido*. LF Editorial.
+* Ashcroft, Mermin. (2022). *Física do Estado Sólido*. Cengage Learning.
+* Oliveira, de Jesus. (2017). *Introdução à Física do Estado Sólido*. LF Editorial.
+* Giustino (2014). Materials Modelling using Density Functional Theory. Oxford.
 ---
 
 ## Roadmap & Progresso
